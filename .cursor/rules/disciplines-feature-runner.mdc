@@ -1,0 +1,24 @@
+---
+description: Run and diagnose Spectrum Back Office Disciplines Cucumber tests
+globs:
+  - features/functional/disciplines.feature
+  - src/pages/DisciplinesPage.ts
+  - src/steps/entitySteps.ts
+  - src/hooks/hooks.ts
+alwaysApply: false
+---
+
+# Disciplines Feature Runner
+
+Use this rule when the user asks to run, execute, test, fix, automate, or diagnose Disciplines tests. Run `features/functional/disciplines.feature` headlessly from the workspace root with `HEADED=false` and the progress formatter.
+
+Run the complete feature first:
+
+```powershell
+$env:HEADED = 'false'
+.\node_modules\.bin\cucumber-js.cmd features\functional\disciplines.feature --format progress
+```
+
+Diagnose every failure by scenario, failed step, owning file/method, locator or assertion, and phase: setup, test body, teardown, or runner. Inspect current output and relevant page objects before editing. Do not expose `.env` values, credentials, tokens, cookies, or authorization headers; do not generate reports or use stale reports as evidence. A timeout, cancellation, missing summary, or empty output is inconclusive, not a pass.
+
+When the user authorizes fixes, make only the smallest evidence-based change for this feature. Do not weaken assertions, skip scenarios, add arbitrary sleeps, or change unrelated files. After every fix run `npm run typecheck`, then rerun the complete feature. Report the exact command, summary, exit code, failures, evidence, fixes, and any live-environment blocker.

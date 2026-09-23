@@ -1,0 +1,24 @@
+---
+description: Run and diagnose every Spectrum Back Office functional Cucumber feature
+globs:
+  - features/functional/*.feature
+  - src/**/*.ts
+alwaysApply: false
+---
+
+# All Features Runner
+
+Use this rule when the user asks to run all features, the complete functional suite, every feature, or to diagnose the whole Spectrum Back Office test suite.
+
+Run from the workspace root with a headless browser:
+
+```powershell
+$env:HEADED = 'false'
+npm run test:headless
+```
+
+Capture the exit code and complete Cucumber summary. Do not report a pass when the process times out, is cancelled, produces no summary, or has no reliable exit code. Never expose `.env` values, credentials, tokens, cookies, or authorization headers. Do not generate reports or use stale report files as evidence.
+
+For each failure, isolate the relevant feature with `features/functional/<feature>.feature --format progress`, then isolate by exact scenario name only when needed. Record the failed step, owning file/method, locator/assertion/action, phase, current evidence, and cause category: configuration, authentication, shared setup/navigation, selector, timing, data, assertion, teardown, or live environment.
+
+When the user authorizes a fix, make the smallest evidence-based change in the owning hook, page object, step, utility, or setup code. Do not weaken assertions, skip scenarios, add arbitrary sleeps, or change unrelated features. Run `npm run typecheck` after every fix, then rerun `npm run test:headless`. Stop only when the complete suite passes or a live-environment blocker is proven. Report features/scenarios, passed/failed/skipped/undefined, exit code, evidence, fixes, and remaining blockers.

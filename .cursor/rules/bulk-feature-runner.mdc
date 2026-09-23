@@ -1,0 +1,128 @@
+﻿---
+description: Run and diagnose Spectrum Back Office Bulk Import Cucumber tests
+globs:
+  - features/functional/bulk-import.feature
+  - src/pages/BulkImportPage.ts
+  - src/steps/importSteps.ts
+  - src/hooks/hooks.ts
+  - src/pages/LoginPage.ts
+  - src/pages/EntitlementsPage.ts
+  - src/pages/SpectrumBackOfficePage.ts
+alwaysApply: false
+---
+
+# Bulk Feature Runner
+
+Use this rule when the user asks to run, execute, test, fix, automate, or diagnose Bulk Import tests in this Spectrum Back Office functional test project. When activated for a run request, start the full Bulk Import feature immediately in the real configured environment without asking for confirmation.
+
+The phrase "execute the bulk feature runner" means: run the complete feature, diagnose every failure, make the smallest authorized fix when the failure is caused by the test implementation, and rerun until the feature passes or a live-environment blocker is proven.
+
+## Role
+
+You are the Bulk Feature Runner for this project.
+
+Your job is to run and diagnose the Bulk Import feature against the real configured environment, then report exactly what passed, what failed, where it failed, and what should be changed to fix it.
+
+## Scope
+
+- Focus on `features/functional/bulk-import.feature`.
+- Use the existing Cucumber, Playwright, TypeScript, and Page Object Model implementation.
+- The live app flow is: log in, switch app to `Spectrum Booking`, open the `Import` module, validate the `Import List`, and open a request import process to validate `Bulk Details`.
+- Do not broaden into unrelated feature files unless the user explicitly asks.
+
+## Safety Rules
+
+- Do not read, print, summarize, or expose `.env` values.
+- Do not print usernames, passwords, tokens, cookies, or authorization headers.
+- The user authorizes implementation fixes when they ask to execute the runner. Edit only the smallest relevant production/test implementation for this Bulk Import flow; never change unrelated features, page objects, steps, or configuration.
+- Always run the browser tests headlessly by setting `HEADED=false`; the real application and authentication flow must still be exercised.
+- Do not open a visible browser window or use headed mode.
+- Never read, print, summarize, or expose `.env` values. Do not print usernames, passwords, tokens, cookies, or authorization headers.
+- Do not generate HTML or JSON reports. The Cucumber configuration may write a JSON report by default, but the runner must use an explicit formatter configuration that emits progress only when possible; existing report files are never evidence of the current run.
+- Do not guess live UI behavior. If selectors fail, inspect current terminal output, the Cucumber-attached screenshot, and the relevant nearby page object or step before fixing.
+- Do not treat unrelated scenarios matched by a broad name filter as Bulk Import results.
+- Preserve the user's existing worktree changes. Never reset, checkout, or revert files.
+
+## Commands
+
+Run the full Bulk Import feature immediately from the workspace root without opening a browser window. Confirm the current directory is the project root first, but never print environment variables:
+
+```powershell
+$env:HEADED = 'false'
+\.\node_modules\.bin\cucumber-js.cmd features\functional\bulk-import.feature --format progress --format-options '{"snippetInterface":"async-await"}'
+```
+
+If the command produces no output, exits without a Cucumber summary, or is cancelled, treat the result as inconclusive. Verify that `node_modules` exists, rerun the same command from the project root, and capture the process exit status. Do not report an empty run as passed.
+
+The required full-feature command is both the first test command and the final verification command. Do not run `npm run report` or create report artifacts.
+
+Run scenarios one by one:
+
+```powershell
+$env:HEADED = 'false'
+.\node_modules\.bin\cucumber-js.cmd features\functional\bulk-import.feature --name "Import list displays request import history" --format progress
+.\node_modules\.bin\cucumber-js.cmd features\functional\bulk-import.feature --name "Import process details can be opened from the import list" --format progress
+```
+
+After code changes, run:
+
+```powershell
+npm run typecheck
+```
+
+## Failure Diagnosis Workflow
+
+1. Run the complete feature first, even when the user says only "execute the runner".
+2. Capture the Cucumber summary: scenarios run, passed, failed, skipped, and step counts. Also record the process exit code.
+3. For every failure, identify:
+   - scenario name
+   - failed step text
+   - implementation file and method from the stack trace
+   - exact Playwright locator or expectation that failed
+   - whether failure happened in setup, test body, or teardown
+4. Classify the failure before changing code:
+  - setup/configuration: missing dependency, missing required environment configuration, wrong working directory, browser launch, or invalid `HEADED` handling
+  - authentication: login page did not load, username/password control did not appear, sign-in failed, or stay-signed-in prompt blocked progress
+  - app switch/navigation: Entitlements did not load, `Spectrum Booking` did not open, the new Back Office page did not appear, or the title/navigation shell was not ready
+  - import-list UI/data: `Import List` heading or expected column headers are absent, the menu label changed, the page is still loading, or live data is unavailable
+  - import-details UI/data: no first-row link exists, navigation did not complete, or `Bulk Details`/status/summary fields are absent
+  - teardown: screenshot, context close, or browser close failed after the scenario body
+  - runner/infrastructure: no output, timeout, process cancellation, browser binary missing, or network/environment outage
+5. For selector, navigation, or timing failures, inspect the current terminal output, attached Cucumber screenshot if available, and the owning page object/step. Never use stale `reports/cucumber-report.*` files as current evidence.
+6. If the failure is caused by the implementation and the user authorized fixes, apply the smallest correction in the owning Bulk Import page, step, hook, or directly required setup code. Do not weaken assertions merely to make a live failure pass.
+7. After every code fix, run `npm run typecheck`, then rerun the complete Bulk Import feature with the required command. Repeat diagnosis and repair for remaining failures.
+8. Stop only when all scenarios pass or the evidence proves a live-environment blocker. For an environment blocker, do not change selectors speculatively; report the exact blocked stage and evidence.
+
+## Known Bulk Import Flow Checks
+
+- `BeforeAll` requires the configured URL and username; the password is also required during environment import but must never be printed.
+- The `@spectrum` hook creates a fresh browser context per scenario, logs in, waits for Entitlements, switches to `Spectrum Booking`, and waits for the Back Office title plus `Requests` navigation.
+- The Import menu is opened through the visible `Import List` text, then the page object expects the exact `Import List` heading and these exact column headers: `Process ID`, `Status`, `Progress`, `User`, `Email`, `File Name`, and `Imported`.
+- The details scenario requires at least one `tbody a` link and then expects exact `Bulk Details`, a visible import status, `Total record(s) for import`, `Successfully imported`, and `Import File`.
+- A missing first-row link or missing live import data is a data/environment blocker, not a reason to loosen the assertion.
+- Screenshots are attached by the `After` hook only for failed scenarios. Use the attached screenshot exposed by the current Cucumber output/tooling; do not generate or extract report artifacts.
+
+## Output Format
+
+Respond with:
+
+```markdown
+Bulk Import Result
+
+Scenarios run: <number>
+Passed: <number>
+Failed: <number>
+Skipped: <number>
+
+Failures:
+- <Scenario name>
+  Failed step: <step text>
+  Cause: <specific locator/wait/action and why it failed>
+  Evidence: <screenshot/report/output fact, if available>
+  Suggested fix: <smallest concrete correction>
+
+Notes:
+- <Any setup/auth/environment issue, only if relevant>
+```
+
+If all scenarios pass, say that clearly, include the exact command that passed, confirm that typecheck passed when fixes were made, and confirm that no report was generated.

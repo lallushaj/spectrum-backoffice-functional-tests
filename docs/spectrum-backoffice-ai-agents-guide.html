@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Spectrum Back Office AI Agents</title>
+  <style>
+    @page { size: A4; margin: 16mm 17mm 17mm; }
+    :root { --ink:#17202a; --muted:#536273; --line:#d8e0e8; --blue:#145da0; --pale:#edf5fb; --green:#2f6b4f; --gold:#a15c18; }
+    * { box-sizing: border-box; }
+    body { font-family: "Segoe UI", Arial, sans-serif; color:var(--ink); font-size:10.2pt; line-height:1.45; margin:0; }
+    h1 { font-size:29pt; line-height:1.08; margin:0 0 9pt; color:#102f4b; }
+    h2 { font-size:17pt; color:#145da0; margin:22pt 0 7pt; border-bottom:2px solid #d8e0e8; padding-bottom:4pt; }
+    h3 { font-size:12pt; margin:14pt 0 4pt; color:#203b55; }
+    p { margin:5pt 0 8pt; }
+    ul, ol { margin:5pt 0 9pt 19pt; padding:0; }
+    li { margin:3pt 0; }
+    code { font-family: Consolas, monospace; font-size:8.8pt; color:#173c5a; background:#f2f5f7; padding:1pt 3pt; border-radius:2pt; }
+    .cover { min-height:245mm; display:flex; flex-direction:column; justify-content:center; border-top:8px solid #145da0; }
+    .eyebrow { color:#2f6b4f; text-transform:uppercase; letter-spacing:1.2px; font-weight:700; font-size:9pt; margin-bottom:16pt; }
+    .subtitle { color:var(--muted); font-size:14pt; max-width:470pt; }
+    .meta { margin-top:35pt; color:var(--muted); border-top:1px solid var(--line); padding-top:10pt; }
+    .callout { background:var(--pale); border-left:4px solid var(--blue); padding:9pt 11pt; margin:10pt 0; }
+    .warning { background:#fff5e9; border-left-color:var(--gold); }
+    .diagram { display:grid; grid-template-columns:1fr 1fr 1fr; gap:7pt; margin:12pt 0 14pt; }
+    .box { border:1px solid #b8c8d6; border-radius:4px; padding:9pt; min-height:66pt; background:#fff; }
+    .box strong { display:block; color:#145da0; margin-bottom:4pt; }
+    .arrow { text-align:center; align-self:center; color:#2f6b4f; font-size:18pt; }
+    table { width:100%; border-collapse:collapse; margin:8pt 0 12pt; font-size:9pt; }
+    th { text-align:left; background:#e9f1f7; color:#173c5a; }
+    th, td { border:1px solid var(--line); padding:5pt 6pt; vertical-align:top; }
+    tr { break-inside:avoid; }
+    .small { color:var(--muted); font-size:8.8pt; }
+    .page-break { break-before:page; }
+    .footer { color:var(--muted); font-size:8pt; margin-top:18pt; border-top:1px solid var(--line); padding-top:5pt; }
+    @media print { h2, h3 { break-after:avoid; } .box, .callout { break-inside:avoid; } }
+  </style>
+</head>
+<body>
+  <section class="cover">
+    <div class="eyebrow">Spectrum Back Office Functional Tests</div>
+    <h1>How the AI Agents Work</h1>
+    <p class="subtitle">A practical guide to the instruction-driven VS Code agents created for running, diagnosing, and maintaining the Spectrum Back Office functional test suite.</p>
+    <div class="meta"><strong>Prepared:</strong> 23 September 2026<br><strong>Repository:</strong> spectrum-backoffice-functional-tests<br><strong>Agent profiles:</strong> 10 user-invocable Markdown profiles in <code>.github/agents</code></div>
+  </section>
+
+  <h2>1. What Was Created</h2>
+  <p>The project contains ten specialized agent profiles under <code>.github/agents</code>. They are instructions for an AI coding agent in VS Code, not a second test framework and not autonomous services running in the application.</p>
+  <table>
+    <tr><th>Agent</th><th>Primary responsibility</th></tr>
+    <tr><td>All Features Runner</td><td>Runs and diagnoses every feature under <code>features/functional/*.feature</code>.</td></tr>
+    <tr><td>Appointments Feature Runner</td><td>Owns the appointments feature and its UI flow.</td></tr>
+    <tr><td>Bulk Feature Runner</td><td>Owns bulk import list and bulk details validation.</td></tr>
+    <tr><td>Disciplines Feature Runner</td><td>Owns discipline reference-table behavior.</td></tr>
+    <tr><td>Organization Types Feature Runner</td><td>Owns organization type reference-table behavior.</td></tr>
+    <tr><td>Organizations Feature Runner</td><td>Owns organization CRUD and related workflows.</td></tr>
+    <tr><td>Reports Feature Runner</td><td>Owns embedded reports and iframe behavior.</td></tr>
+    <tr><td>Requests Feature Runner</td><td>Owns requests, cancelled requests, filters, pagination, and CRUD behavior.</td></tr>
+    <tr><td>Settings Feature Runner</td><td>Owns application settings tabs and validation.</td></tr>
+    <tr><td>Venues Feature Runner</td><td>Owns venue search, filtering, validation, and creation.</td></tr>
+  </table>
+  <div class="callout"><strong>Important boundary:</strong> the agents coordinate existing tests. The business behavior remains in Gherkin feature files, Cucumber steps, Playwright page objects, hooks, and utilities.</div>
+
+  <h2>2. How an Agent Profile Is Built</h2>
+  <p>Each <code>.agent.md</code> file has two parts: metadata that makes the profile discoverable in VS Code, followed by the operating instructions that shape the agent's behavior.</p>
+  <h3>Metadata</h3>
+  <ul>
+    <li><code>name</code>: the label shown to the user.</li>
+    <li><code>description</code>: the routing signal. It states which request wording, feature, and failure types should activate the agent.</li>
+    <li><code>tools: [read, search, execute, edit]</code>: the intended capabilities.</li>
+    <li><code>user-invocable: true</code>: the profile can be selected or invoked directly by the user.</li>
+  </ul>
+  <h3>Instructions</h3>
+  <p>The body gives the agent an explicit mission, scope, safety rules, commands, diagnosis workflow, and output format. This is what turns a general coding agent into a repeatable feature runner.</p>
+
+  <h2>3. Runtime Flow</h2>
+  <div class="diagram">
+    <div class="box"><strong>1. User request</strong>Run all features, or run/diagnose a named module.</div>
+    <div class="box"><strong>2. Agent routing</strong>The profile description and scope identify the right runner.</div>
+    <div class="box"><strong>3. Test command</strong>The agent executes Cucumber with the required feature or tag.</div>
+    <div class="box"><strong>4. Shared setup</strong>Hooks launch Chromium, log in, switch to Spectrum Booking, and wait for the shell.</div>
+    <div class="box"><strong>5. Business test</strong>Cucumber steps call the owning Playwright page object and assertions.</div>
+    <div class="box"><strong>6. Evidence and repair</strong>The agent classifies failures, makes a smallest fix, typechecks, and reruns.</div>
+  </div>
+  <p>The execution path is therefore:</p>
+  <p><code>agent profile -> npm / cucumber-js -> Gherkin feature -> Cucumber step -> Page Object -> Playwright browser -> live Spectrum Back Office</code></p>
+
+  <h2>4. The Shared Test Lifecycle</h2>
+  <ol>
+    <li><code>BeforeAll</code> confirms the required environment is present without printing secrets.</li>
+    <li>The tagged <code>@spectrum</code> hook launches Chromium and creates a scenario-scoped browser context and page.</li>
+    <li><code>LoginPage</code> submits the configured username and password.</li>
+    <li><code>EntitlementsPage</code> waits for readiness and switches to <code>Spectrum Booking</code>.</li>
+    <li><code>SpectrumBackOfficePage</code> waits for the application shell.</li>
+    <li>Feature steps perform business actions through module-specific page objects.</li>
+    <li>On failure, the hook attaches a full-page screenshot, then closes the context and browser.</li>
+  </ol>
+  <div class="callout warning"><strong>Secrets:</strong> credentials come from local environment configuration. Agents are explicitly instructed never to read, print, summarize, or place passwords, cookies, tokens, or authorization headers in commands, source, screenshots, logs, or reports.</div>
+
+  <h2>5. Diagnosis and Fix Strategy</h2>
+  <p>The agents use a controlled loop rather than changing selectors immediately:</p>
+  <ol>
+    <li>Run the complete requested feature first and capture the exit code and Cucumber summary.</li>
+    <li>Inventory every failure. The all-features runner must not stop at the first failure.</li>
+    <li>Isolate a failure by feature, then by exact scenario name.</li>
+    <li>Identify the failed step, owning file and method, locator or assertion, and phase: setup, test body, teardown, or runner.</li>
+    <li>Classify the cause: configuration, environment, authentication, navigation, selector, timing, data, assertion, teardown, or infrastructure.</li>
+    <li>Apply the smallest evidence-based change in the owning hook, page object, step, utility, or setup.</li>
+    <li>Run <code>npm run typecheck</code>, then rerun the complete feature or suite.</li>
+    <li>Stop with a precise live-environment blocker when the evidence points outside the test code.</li>
+  </ol>
+  <p>Agents are specifically told not to add arbitrary sleeps, weaken assertions, skip scenarios, broaden selectors without evidence, or treat stale report files as proof of a current run.</p>
+
+  <h2>6. Commands Used by the Agents</h2>
+  <table>
+    <tr><th>Purpose</th><th>Command</th></tr>
+    <tr><td>Complete suite</td><td><code>$env:HEADED = 'false'; npm run test:headless</code></td></tr>
+    <tr><td>Feature isolation</td><td><code>cucumber-js.cmd features\\functional\\&lt;feature&gt;.feature --format progress</code></td></tr>
+    <tr><td>Exact scenario isolation</td><td><code>cucumber-js.cmd ... --name "&lt;exact scenario name&gt;" --format progress</code></td></tr>
+    <tr><td>Type safety after a fix</td><td><code>npm run typecheck</code></td></tr>
+  </table>
+  <p><code>scripts/run-tests.cjs</code> checks for <code>SBPOJECT_URL</code>, <code>SBPOJECT_USERNAME</code>, and <code>SBPOJECT_PASSWORD</code>, forces headless mode, and delegates to Cucumber. <code>cucumber.js</code> loads TypeScript support, hooks, and steps, runs serially, and writes the standard JSON report.</p>
+
+  <h2>7. Why There Are Specialized Agents</h2>
+  <p>Specialization reduces the amount of context each run needs and limits edits to the owning module. A requests failure should lead to <code>RequestsPage</code> or its steps, while a venues failure should remain in the venues slice. The all-features profile provides broad regression coverage and is the final verification authority when a shared change is made.</p>
+  <p>The result is a simple division of responsibility:</p>
+  <table>
+    <tr><th>Layer</th><th>Responsibility</th></tr>
+    <tr><td>Agent profile</td><td>Decides how to run, diagnose, edit, verify, and report.</td></tr>
+    <tr><td>Feature file</td><td>Defines business intent in Gherkin.</td></tr>
+    <tr><td>Step definition</td><td>Maps Gherkin language to test actions.</td></tr>
+    <tr><td>Page object</td><td>Owns locators and UI interactions.</td></tr>
+    <tr><td>Hook and world</td><td>Owns browser lifecycle, authentication, and scenario state.</td></tr>
+    <tr><td>Playwright and Cucumber</td><td>Execute the browser flow and report outcomes.</td></tr>
+  </table>
+
+  <h2>8. How to Use the Agents</h2>
+  <ol>
+    <li>Open the repository in VS Code with dependencies installed and the local environment configured.</li>
+    <li>Select the relevant agent profile from the agent picker, or make a request matching its description.</li>
+    <li>Ask for a run, diagnosis, or authorized fix, such as “run the Requests feature and diagnose failures.”</li>
+    <li>Review the command, failure classification, changed file, typecheck result, and rerun result in the agent response.</li>
+  </ol>
+  <div class="callout"><strong>Expected outcome:</strong> a useful result is more than “passed” or “failed.” It identifies scenarios, phases, evidence, fixes, verification, and any remaining environment blocker.</div>
+
+  <h2>9. Maintenance Rules</h2>
+  <ul>
+    <li>Keep descriptions specific enough for reliable routing.</li>
+    <li>Keep module agents narrow and preserve feature intent.</li>
+    <li>Update required commands when scripts or feature paths change.</li>
+    <li>Keep safety rules aligned with the project secrets policy.</li>
+    <li>Preserve the complete-suite verification requirement for shared changes.</li>
+    <li>Update the output template when new evidence or failure phases become important.</li>
+  </ul>
+  <p class="footer">Generated from the current Spectrum Back Office functional test project. This guide documents the repository's instruction-driven agent profiles and their integration with the existing test architecture.</p>
+</body>
+</html>

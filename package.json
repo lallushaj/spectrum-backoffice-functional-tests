@@ -1,0 +1,30 @@
+{
+  "name": "spectrum-backoffice-functional-tests",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Independent Playwright, Cucumber and TypeScript functional tests for Spectrum Back Office.",
+  "scripts": {
+    "setup": "npm install && npx playwright install chromium",
+    "test": "cross-env HEADED=true node scripts/run-tests.cjs",
+    "test:functional": "cross-env HEADED=true node scripts/run-tests.cjs --tags @functional",
+    "test:regression": "cross-env HEADED=true node scripts/run-tests.cjs --tags @regression",
+    "test:headed": "cross-env HEADED=true node scripts/run-tests.cjs",
+    "test:headless": "node scripts/run-tests.cjs",
+    "test:tag": "node scripts/run-tests.cjs --tags",
+    "docs:agents:pdf": "node scripts/generate-agent-guide-pdf.cjs",
+    "report": "tsx scripts/generate-report.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@cucumber/cucumber": "^12.2.0",
+    "@playwright/test": "^1.52.0",
+    "dotenv": "^16.4.7",
+    "playwright": "^1.52.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "cross-env": "^7.0.3",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3"
+  }
+}
